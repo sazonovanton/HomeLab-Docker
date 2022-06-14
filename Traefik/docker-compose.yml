@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+
+  #Reverse proxy to route conections from each subdomain to the corresponding container
+  #Automate certificate creation and renewal for all docker containers that are proxied enabling HTTPS
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=websecure"
+      - "--certificatesresolvers.myresolver.acme.email=example@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--serverstransport.insecureskipverify=true"
+      - "--providers.file=true"
+      - "--providers.file.filename=/etc/traefik/rules.toml"
+    labels: 
+      # middleware redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # global redirect to https
+      - "traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.redirs.entrypoints=web"
+      - "traefik.http.routers.redirs.middlewares=redirect-to-https"
+    ports:
+      - 80:80
+      - 8907:8080
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+      - /etc/localtime:/etc/localtime:ro
+      - "./rules.toml:/etc/traefik/rules.toml"
+    restart: always

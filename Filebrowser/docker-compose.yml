@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  filebrowser:
+    image: hurlenko/filebrowser
+    container_name: filebrowser
+    user: "${UID}:${GID}"
+    ports:
+      - 8090:8080
+    volumes:
+      - /:/data
+      - ./config:/config
+    environment:
+      - FB_BASEURL=/
+    restart: unless-stopped

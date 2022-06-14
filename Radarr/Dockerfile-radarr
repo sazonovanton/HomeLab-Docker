@@ -1,0 +1,5 @@
+FROM linuxserver/radarr
+
+RUN ln -sf /mnt/drive/downloads /downloads && ln -sf /mnt/drive/movies /movies
+
+ENTRYPOINT ["/init"]

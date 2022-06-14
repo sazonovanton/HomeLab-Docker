@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/HomeLab-Docker/HASS/config:/config
+    environment:
+      - TZ=Europe/London
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8123"
+      - "traefik.http.routers.homeassistant.rule=Host(`smarthome.example.com`)"
+      - "traefik.http.routers.homeassistant.entrypoints=websecure"
+      - "traefik.http.routers.homeassistant.tls.certresolver=myresolver"
+    restart: unless-stopped
+    privileged: true
+    network_mode: host

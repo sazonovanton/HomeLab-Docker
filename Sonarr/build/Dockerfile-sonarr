@@ -1,0 +1,6 @@
+FROM linuxserver/sonarr
+
+RUN ln -sf /mnt/drive/downloads /downloads && ln -sf /mnt/drive/serials /serials
+
+ENTRYPOINT ["/init"]
+

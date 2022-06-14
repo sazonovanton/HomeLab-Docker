@@ -1,0 +1,60 @@
+ [http.routers]
+   # Define a connection between requests and services
+     [http.routers.hassweb]
+        rule = "Host(`smarthome.example.com`)"
+        entrypoints = ["websecure"]
+        service = "hass"
+     [http.routers.hassweb.tls]
+        certResolver = "myresolver"
+
+     [http.routers.plexweb]
+        rule = "Host(`plex.example.com`)"
+        entrypoints = ["websecure"]
+        service = "plex"
+     [http.routers.plexweb.tls]
+        certResolver = "myresolver"
+
+     [http.routers.cloudweb]
+        rule = "Host(`cloud.example.com`)"
+        entrypoints = ["websecure"]
+        service = "cloud"
+     [http.routers.cloudweb.tls]
+        certResolver = "myresolver"
+
+     [http.routers.jupyterweb]
+        rule = "Host(`jupyter.example.com`)"
+        entrypoints = ["websecure"]
+        service = "jupyter"
+     [http.routers.jupyterweb.tls]
+        certResolver = "myresolver"
+
+     [http.routers.jellyfinweb]
+        rule = "Host(`jellyfin.example.com`)"
+        entrypoints = ["websecure"]
+        service = "jellyfin"
+     [http.routers.jellyfinweb.tls]
+        certResolver = "myresolver"
+
+
+
+ [http.services]
+        # Define how to reach an existing service on our infrastructure
+        [http.services.hass.loadBalancer]
+           [[http.services.hass.loadBalancer.servers]]
+             url = "http://192.168.1.9:8123"
+
+        [http.services.plex.loadBalancer]
+           [[http.services.plex.loadBalancer.servers]]
+             url = "http://192.168.1.9:32400"
+
+        [http.services.cloud.loadBalancer]
+           [[http.services.cloud.loadBalancer.servers]]
+             url = "http://192.168.1.9:8100"
+
+        [http.services.jupyter.loadBalancer]
+           [[http.services.jupyter.loadBalancer.servers]]
+             url = "http://192.168.1.9:8888"
+
+        [http.services.jellyfin.loadBalancer]
+           [[http.services.jellyfin.loadBalancer.servers]]
+             url = "http://192.168.1.9:8096"

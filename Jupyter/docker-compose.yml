@@ -1,0 +1,21 @@
+version:  '3'
+services:
+  jupyter-notebook:
+      build:
+        context: .
+        dockerfile: Dockerfile-jupyter
+      volumes:
+        - ./workdir/username:/home/username
+        - /mnt/drive/Jupyter:/mnt/Jupyter
+        - ./config:/root/.jupyter
+      ports:
+        - 8888:8888
+      container_name: jupyter_notebook
+      #command: ""
+      restart: unless-stopped
+      labels:
+        - "traefik.enable=true"
+        - "traefik.port=8888"
+        - "traefik.http.routers.jupyter.rule=Host(`jupyter.example.com`)"
+        - "traefik.http.routers.jupyter.entrypoints=websecure"
+        - "traefik.http.routers.jupyter.tls.certresolver=myresolver"

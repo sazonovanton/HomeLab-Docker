@@ -1,0 +1,15 @@
+version: '3'
+services:
+  radarr:
+    # Rebuilding because operations of moving files is faster, when everything happens inside of container
+    build:
+      context: .
+      dockerfile: Dockerfile-radarr
+    #image: linuxserver/radarr
+    container_name: radarr
+    volumes:
+      - ./config:/config
+      - /mnt/drive/:/mnt/drive/
+    ports:
+      - 7878:7878
+    restart: unless-stopped

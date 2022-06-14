@@ -1,0 +1,30 @@
+version: "3"
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.example.com
+    volumes:
+      - ./config:/config
+      - /mnt/drive/serials:/data/tvshows
+      - /mnt/drive/movies:/data/movies
+    ports:
+      - 8096:8096
+      #- 8920:8920 #optional
+      #- 7359:7359/udp #optional
+      #- 1900:1900/udp #optional
+    restart: unless-stopped
+    privileged: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8096"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.example.com`)"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.tls.certresolver=myresolver"
+    devices:
+      # VAAPI Devices
+      - /dev/dri/:/dev/dri/

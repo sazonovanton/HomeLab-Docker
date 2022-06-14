@@ -1,0 +1,45 @@
+# Ubuntu 20.04 (focal)
+# https://hub.docker.com/_/ubuntu/?tab=tags&name=focal
+FROM ubuntu:focal
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+
+RUN apt-get update --yes && \
+    # - apt-get upgrade is run to patch known vulnerabilities in apt-get packages as
+    #   the ubuntu base image is rebuilt too seldom sometimes (less than once a month)
+    apt-get upgrade --yes && \
+    apt-get install --yes --no-install-recommends \
+    #ca-certificates \
+    fonts-liberation \
+    locales \
+    # - pandoc is used to convert notebooks to html files
+    #   it's not present in arm64 ubuntu image, so we install it here
+    pandoc \
+    # - run-one - a wrapper script that runs no more
+    #   than one unique  instance  of  some  command with a unique set of arguments,
+    #   we use `run-one-constantly` to support `RESTARTABLE` option
+    run-one \
+    sudo \
+    # - tini is installed as a helpful container entrypoint that reaps zombie
+    #   processes and such of the actual executable we want to start, see
+    #   https://github.com/krallin/tini#why-tini for details.
+    tini \
+    wget && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    echo "ru_RU.utf8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+RUN apt-get update && apt-get install -y build-essential python3.10 python3-pip python3-dev
+RUN pip3 -q install pip --upgrade
+RUN pip3 install jupyter 
+
+RUN mkdir /home/username
+WORKDIR /home/username
+
+ENV TINI_VERSION v0.6.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
+RUN chmod +x /usr/bin/tini
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]

@@ -1,0 +1,15 @@
+version: '2'
+services:
+  sonarr:
+    # Rebuilding because operations of moving files is faster, when everything happens inside of container
+    build:
+      context: ./build
+      dockerfile: Dockerfile-sonarr
+    #image: linuxserver/sonarr
+    container_name: sonarr
+    volumes:
+      - ~/HomeLab-Docker/Sonarr/config:/config
+      - /mnt/drive/:/mnt/drive/
+    ports:
+      - 8989:8989
+    restart: unless-stopped

@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  plex:
+    container_name: plex
+    image: "lscr.io/linuxserver/plex"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/config
+      - /mnt/drive:/medialib
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - PLEX_CLAIM=claim-***
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=32400"
+      - "traefik.http.routers.plex.rule=Host(`plex.example.com`)"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.tls.certresolver=myresolver"
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    devices:
+      # VAAPI Devices
+      - /dev/dri:/dev/dri

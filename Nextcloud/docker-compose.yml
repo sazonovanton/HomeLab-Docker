@@ -1,0 +1,58 @@
+version: '3.2'
+
+services:
+  db:
+    image: mariadb
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysqlpassroot
+      - MYSQL_PASSWORD=mysqlpass
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  nextcloud:
+    image: nextcloud
+    restart: unless-stopped
+    ports:
+      - 8100:80
+    links:
+      - db
+    volumes:
+      - ./nextcloud/html:/var/www/html
+      - /mnt/drive:/mnt/drive
+    environment:
+      - MYSQL_PASSWORD=mysqlpass
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+      - VIRTUAL_HOST=cloud.example.com
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8100"
+      - "traefik.http.routers.cloud.rule=Host(`cloud.example.com`)"
+      - "traefik.http.routers.cloud.entrypoints=websecure"
+      - "traefik.http.routers.cloud.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.nextcloudHeader.headers.stsSeconds=15552000"
+      - "traefik.http.middlewares.nextcloudHeader.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.nextcloudHeader.headers.stsPreload=true"
+      - "traefik.http.middlewares.nextcloudHeader.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.nextcloudHeader.headers.isdevelopment=false"
+      #- "traefik.http.middlewares.nextcloudRedirect.replacepathregex.regex=^/.well-known/ca(l|rd)dav"
+      #- "traefik.http.middlewares.nextcloudRedirect.replacepathregex.replacement=/remote.php/dav/"
+      - "traefik.http.middlewares.nextcloudRedirect.redirectRegex.regex=https://(.*)/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.nextcloudRedirect.redirectRegex.replacement=https://$${1}/remote.php/dav/"
+      - "traefik.http.middlewares.nextcloudRedirect.redirectRegex.permanent=true"
+      # - "traefik.http.routers.cloud.middlewares=nextcloud-redirectregex,nextcloudHeader"
+      - "traefik.http.routers.cloud.middlewares=nextcloudRedirect,nextcloudHeader"
+    #networks:
+    #  - nextcloud
+    #  - t2_proxy
+    
+#networks:
+#  nextcloud:
+#    name: nextcloud
+#    driver: bridge
+
